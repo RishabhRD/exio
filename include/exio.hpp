@@ -17,14 +17,19 @@
 #pragma once
 
 #include "config.hpp"
-#include <stdexec/stdexec/execution.hpp>
+#include "file/open_flags.hpp"
+#include <filesystem>
 
-#ifdef EXIO_LINUX
-#include "io_uring/io_uring_context.hpp"
+#ifdef EXIO_POSIX
+#include "posix/file/open.hpp"
 #endif
 
 namespace exio {
-#ifdef EXIO_LINUX
-using io_context = exio::io_uring_context;
+
+inline auto open(std::filesystem::path const &path, open_flags_t flags) {
+#ifdef EXIO_POSIX
+  return posix::open(path, flags);
 #endif
+}
+
 } // namespace exio
