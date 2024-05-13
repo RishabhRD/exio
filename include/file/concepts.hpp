@@ -16,7 +16,18 @@
 
 #pragma once
 
-#include "file/concepts.hpp"
-#include "file/open.hpp"
-#include "file/sender_factories.hpp"
-#include "io_context.hpp"
+#include "file/types.hpp"
+#include <span>
+#include <stdexec/stdexec/execution.hpp>
+
+namespace exio {
+template <typename Scheduler>
+concept stream_io_scheduler =
+    stdexec::scheduler<Scheduler> &&
+    requires(Scheduler const &sch, stream_handle_t &handle,
+             std::span<std::byte> mutable_buffer) {
+      // TODO: see how sender_of concept works and replace it with
+      // sender_of<size_t>
+      { sch.async_read_some(handle, mutable_buffer) } -> stdexec::sender;
+    };
+} // namespace exio

@@ -16,7 +16,12 @@
 
 #pragma once
 
-#include "file/concepts.hpp"
 #include "file/open.hpp"
-#include "file/sender_factories.hpp"
-#include "io_context.hpp"
+#include "file/open_flags.hpp"
+#include <filesystem>
+#include <type_traits>
+
+namespace exio {
+using stream_handle_t =
+    std::invoke_result_t<open_t, std::filesystem::path const &, open_flags_t>;
+}

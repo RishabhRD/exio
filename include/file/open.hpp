@@ -16,7 +16,22 @@
 
 #pragma once
 
-#include "file/concepts.hpp"
-#include "file/open.hpp"
-#include "file/sender_factories.hpp"
-#include "io_context.hpp"
+#include "config.hpp"
+#include "file/open_flags.hpp"
+#include <filesystem>
+
+#ifdef EXIO_POSIX
+#include "posix/file/open.hpp"
+#endif
+
+namespace exio {
+struct open_t {
+  auto operator()(std::filesystem::path const &path, open_flags_t flags) const {
+#ifdef EXIO_POSIX
+    return posix::open(path, flags);
+#endif
+  }
+};
+
+constexpr open_t open{};
+} // namespace exio

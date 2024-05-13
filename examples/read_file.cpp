@@ -29,18 +29,19 @@ int main() {
   auto fd = exio::open(std::filesystem::path("/home/rishabh/myfile"),
                        exio::open_flags::read_only);
   std::array<std::byte, 8> buffer;
-  auto task = exec::schedule_after(sch, 1s) |
-              stdexec::then([] { std::cout << "Hello world!" << std::endl; }) |
-              stdexec::let_value([sch, &fd, &buffer] {
-                return sch.async_read_some(fd, std::span<std::byte>(buffer));
-              }) |
-              stdexec::then([&ctx, &buffer](std::uint32_t read_bytes) {
-                std::cout << "Read: " << read_bytes << std::endl;
-                for (std::uint32_t i{}; i < read_bytes; ++i) {
-                  std::cout << char(buffer[i]);
-                }
-                std::cout << std::endl;
-                ctx.request_stop();
-              });
+  auto task =
+      exec::schedule_after(sch, 1s) |
+      stdexec::then([] { std::cout << "Hello world!" << std::endl; }) |
+      stdexec::let_value([sch, &fd, &buffer] {
+        return exio::async_read_some(sch, fd, std::span<std::byte>(buffer));
+      }) |
+      stdexec::then([&ctx, &buffer](std::uint32_t read_bytes) {
+        std::cout << "Read: " << read_bytes << std::endl;
+        for (std::uint32_t i{}; i < read_bytes; ++i) {
+          std::cout << char(buffer[i]);
+        }
+        std::cout << std::endl;
+        ctx.request_stop();
+      });
   stdexec::sync_wait(stdexec::when_all(task, ctx.run()));
 }

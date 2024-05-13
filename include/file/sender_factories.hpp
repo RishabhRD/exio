@@ -17,6 +17,12 @@
 #pragma once
 
 #include "file/concepts.hpp"
-#include "file/open.hpp"
-#include "file/sender_factories.hpp"
-#include "io_context.hpp"
+#include "file/types.hpp"
+
+namespace exio {
+template <stream_io_scheduler Scheduler>
+auto async_read_some(Scheduler const &sch, stream_handle_t &handle,
+                     std::span<std::byte> buffer) {
+  return sch.async_read_some(handle, buffer);
+}
+} // namespace exio
