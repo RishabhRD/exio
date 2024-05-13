@@ -20,7 +20,8 @@
 #include "io_uring/ops/async_read_some.hpp"
 #include "io_uring/ops/schedule.hpp"
 #include "io_uring/ops/schedule_after.hpp"
-#include "unix/file_handle.hpp"
+#include "posix/file/file_handle.hpp"
+#include <span>
 
 namespace exio {
 namespace __io_uring {
@@ -59,11 +60,11 @@ public:
                                                 .__duration_ = __duration};
   }
 
-  template <open_mode mode, std::size_t Extent>
-    requires((mode == open_mode::READ_ONLY) || (mode == open_mode::READ_WRITE))
-  inline auto async_read_some(exio::file_handle<mode> &file,
-                              std::span<std::byte, Extent> buffer) const {
-    return async_read_some_sender<scheduler_t, Extent>{
+  // TODO: Can Extent can be a template parameter without making concepts worse?
+  template <bool is_socket>
+  inline auto async_read_some(exio::posix::file_handle<is_socket> &file,
+                              std::span<std::byte> buffer) const {
+    return async_read_some_sender<scheduler_t, std::dynamic_extent>{
         .fd = file.fd, .buffer = buffer, .env = {__context_}};
   }
 };

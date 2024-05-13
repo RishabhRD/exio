@@ -17,18 +17,23 @@
 #pragma once
 
 #include "exception.hpp"
-#include "unix/file_handle.hpp"
-#include <fcntl.h>
+#include "fcntl.h"
+#include "open_flags.hpp"
+#include "posix/file/file_handle.hpp"
 #include <filesystem>
 
 namespace exio {
-inline auto open_read_only(std::filesystem::path const &path) {
-  auto result = ::open(path.c_str(), O_RDONLY | O_CLOEXEC);
+namespace posix {
+
+// TODO: can we make open_flags_t a template parameter?
+//       (with supporting concepts)
+inline auto open(std::filesystem::path const &path, open_flags_t flags) {
+  auto result = ::open(path.c_str(), flags | O_CLOEXEC);
   if (result < 0) {
     throw_(std::system_error{errno, std::system_category()});
   }
 
-  return exio::file_handle<open_mode::READ_ONLY>{
-      exec::safe_file_descriptor{result}};
+  return exio::posix::file_handle<false>{exec::safe_file_descriptor{result}};
 }
+} // namespace posix
 } // namespace exio

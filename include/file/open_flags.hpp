@@ -16,12 +16,15 @@
 
 #pragma once
 
-#include <stdexec/exec/linux/safe_file_descriptor.hpp>
-namespace exio {
-enum class open_mode { READ_ONLY, WRITE_ONLY, READ_WRITE };
+#include "config.hpp"
 
-template <open_mode Mode> struct file_handle {
-  constexpr static open_mode mode = Mode;
-  exec::safe_file_descriptor fd;
-};
+#ifdef EXIO_POSIX
+#include "posix/file/open_flags.hpp"
+#endif
+
+namespace exio {
+#ifdef EXIO_POSIX
+using open_flags_t = posix::open_flags_t;
+using open_flags = posix::open_flags;
+#endif
 } // namespace exio

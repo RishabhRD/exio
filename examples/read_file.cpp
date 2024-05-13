@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "file.hpp"
+#include "file/open_flags.hpp"
 #include "io_context.hpp"
 #include <cstdint>
 #include <filesystem>
@@ -25,7 +25,8 @@ int main() {
   using namespace std::chrono_literals;
   exio::io_context ctx;
   auto sch = ctx.get_scheduler();
-  auto fd = exio::open_read_only(std::filesystem::path("/home/rishabh/myfile"));
+  auto fd = exio::open(std::filesystem::path("/home/rishabh/myfile"),
+                       exio::open_flags::read_only);
   std::array<std::byte, 8> buffer;
   auto task = exec::schedule_after(sch, 1s) |
               stdexec::then([] { std::cout << "Hello world!" << std::endl; }) |

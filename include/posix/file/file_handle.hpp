@@ -16,26 +16,13 @@
 
 #pragma once
 
-#include "config.hpp"
-#include "file/open_flags.hpp"
-#include "io_uring/io_uring_context.hpp"
-#include <filesystem>
-#include <stdexec/stdexec/execution.hpp>
-#ifdef EXIO_POSIX
-#include "posix/file/open.hpp"
-#endif
+#include <stdexec/exec/linux/safe_file_descriptor.hpp>
 namespace exio {
-template <typename T>
-// TODO: Define clearly what an IO Context is
-concept IOContext = requires(T &ctx) {
-  { ctx.get_scheduler() } -> stdexec::scheduler;
+namespace posix {
+template <bool IsSocket> struct file_handle {
+  constexpr static bool is_socket = IsSocket;
+
+  exec::safe_file_descriptor fd;
 };
-
-using io_context = exio::io_uring_context;
-
-inline auto open(std::filesystem::path const &path, open_flags_t flags) {
-#ifdef EXIO_POSIX
-  return posix::open(path, flags);
-#endif
-}
+} // namespace posix
 } // namespace exio

@@ -16,26 +16,21 @@
 
 #pragma once
 
-#include "config.hpp"
-#include "file/open_flags.hpp"
-#include "io_uring/io_uring_context.hpp"
-#include <filesystem>
-#include <stdexec/stdexec/execution.hpp>
-#ifdef EXIO_POSIX
-#include "posix/file/open.hpp"
-#endif
+#include <fcntl.h>
+
 namespace exio {
-template <typename T>
-// TODO: Define clearly what an IO Context is
-concept IOContext = requires(T &ctx) {
-  { ctx.get_scheduler() } -> stdexec::scheduler;
+namespace posix {
+enum open_flags {
+  read_only = O_RDONLY,
+  write_only = O_WRONLY,
+  read_write = O_RDWR,
+  append = O_APPEND,
+  create = O_CREAT,
+  exclusive = O_EXCL,
+  truncate = O_TRUNC,
+  sync_all_on_write = O_SYNC
 };
 
-using io_context = exio::io_uring_context;
-
-inline auto open(std::filesystem::path const &path, open_flags_t flags) {
-#ifdef EXIO_POSIX
-  return posix::open(path, flags);
-#endif
-}
+using open_flags_t = int;
+} // namespace posix
 } // namespace exio
