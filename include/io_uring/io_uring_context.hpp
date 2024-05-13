@@ -16,11 +16,11 @@
 
 #pragma once
 
-#include "file/read_only_file.hpp"
 #include "io_uring/io_uring_context_base.hpp"
 #include "io_uring/ops/async_read_some.hpp"
 #include "io_uring/ops/schedule.hpp"
 #include "io_uring/ops/schedule_after.hpp"
+#include "unix/file_handle.hpp"
 
 namespace exio {
 namespace __io_uring {
@@ -59,8 +59,9 @@ public:
                                                 .__duration_ = __duration};
   }
 
-  template <std::size_t Extent>
-  inline auto async_read_some(exio::read_only_file &file,
+  template <open_mode mode, std::size_t Extent>
+    requires((mode == open_mode::READ_ONLY) || (mode == open_mode::READ_WRITE))
+  inline auto async_read_some(exio::file_handle<mode> &file,
                               std::span<std::byte, Extent> buffer) const {
     return async_read_some_sender<scheduler_t, Extent>{
         .fd = file.fd, .buffer = buffer, .env = {__context_}};

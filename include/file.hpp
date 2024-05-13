@@ -17,7 +17,7 @@
 #pragma once
 
 #include "exception.hpp"
-#include "file/read_only_file.hpp"
+#include "unix/file_handle.hpp"
 #include <fcntl.h>
 #include <filesystem>
 
@@ -28,6 +28,7 @@ inline auto open_read_only(std::filesystem::path const &path) {
     throw_(std::system_error{errno, std::system_category()});
   }
 
-  return exio::read_only_file{exec::safe_file_descriptor{result}};
+  return exio::file_handle<open_mode::READ_ONLY>{
+      exec::safe_file_descriptor{result}};
 }
 } // namespace exio

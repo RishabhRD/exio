@@ -22,7 +22,6 @@
 #include <cstdint>
 #include <span>
 #include <stdexec/exec/linux/safe_file_descriptor.hpp>
-#include <stdexec/stdexec/__detail/__execution_fwd.hpp>
 #include <stdexec/stdexec/execution.hpp>
 #include <utility>
 
