@@ -14,5 +14,20 @@
  * limitations under the License.
  */
 
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest/doctest.h>
+#pragma once
+
+#include "exception.hpp"
+#include "file/read_only_file.hpp"
+#include <fcntl.h>
+#include <filesystem>
+
+namespace exio {
+inline auto open_read_only(std::filesystem::path const &path) {
+  auto result = ::open(path.c_str(), O_RDONLY | O_CLOEXEC);
+  if (result < 0) {
+    throw_(std::system_error{errno, std::system_category()});
+  }
+
+  return exio::read_only_file{exec::safe_file_descriptor{result}};
+}
+} // namespace exio

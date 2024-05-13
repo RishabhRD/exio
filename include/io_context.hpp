@@ -14,5 +14,16 @@
  * limitations under the License.
  */
 
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest/doctest.h>
+#pragma once
+
+#include "io_uring/io_uring_context.hpp"
+#include <stdexec/stdexec/execution.hpp>
+namespace exio {
+template <typename T>
+// TODO: Define clearly what an IO Context is
+concept IOContext = requires(T &ctx) {
+  { ctx.get_scheduler() } -> stdexec::scheduler;
+};
+
+using io_context = exio::io_uring_context;
+} // namespace exio

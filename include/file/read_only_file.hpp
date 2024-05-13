@@ -14,5 +14,13 @@
  * limitations under the License.
  */
 
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest/doctest.h>
+#pragma once
+#include <stdexec/exec/linux/safe_file_descriptor.hpp>
+
+namespace exio {
+
+struct read_only_file {
+  exec::safe_file_descriptor fd;
+};
+
+} // namespace exio

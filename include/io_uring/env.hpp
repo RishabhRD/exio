@@ -13,6 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#pragma once
 
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest/doctest.h>
+#include "io_uring/io_uring_context_base.hpp"
+
+namespace exio {
+namespace __io_uring {
+template <typename Scheduler> struct io_uring_env_t {
+  context_t *ctx;
+
+  friend auto
+  tag_invoke(stdexec::get_completion_scheduler_t<stdexec::set_value_t>,
+             io_uring_env_t const &env) noexcept -> Scheduler {
+    return Scheduler{env.ctx};
+  }
+};
+} // namespace __io_uring
+} // namespace exio

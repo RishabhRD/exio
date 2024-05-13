@@ -14,5 +14,21 @@
  * limitations under the License.
  */
 
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest/doctest.h>
+#pragma once
+
+#include <utility>
+namespace exio {
+namespace _exceptions {
+struct throw_t {
+  template <typename Exception>
+  inline void operator()([[maybe_unused]] Exception &&ex) const {
+#ifdef EXIO_NO_EXCEPTIONS
+    std::terminate();
+#else
+    throw std::forward<Exception>(ex);
+#endif
+  }
+};
+} // namespace _exceptions
+inline constexpr _exceptions::throw_t throw_{};
+} // namespace exio

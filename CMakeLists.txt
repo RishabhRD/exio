@@ -6,6 +6,7 @@ include(cmake/CompilerWarnings.cmake)
 include(package.cmake)
 
 set(CMAKE_CXX_STANDARD 20)
+# add_compile_options(-fconcepts-diagnostics-depth=2)
 
 add_library(project_options INTERFACE)
 

@@ -14,5 +14,17 @@
  * limitations under the License.
  */
 
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest/doctest.h>
+#include "io_context.hpp"
+#include <iostream>
+#include <stdexec/exec/timed_scheduler.hpp>
+int main() {
+  using namespace std::chrono_literals;
+  exio::io_context ctx;
+  auto sch = ctx.get_scheduler();
+  auto task = exec::schedule_after(sch, 1s) //
+              | stdexec::then([&ctx] {
+                  std::cout << "Hello world!" << std::endl;
+                  ctx.request_stop();
+                }); //
+  stdexec::sync_wait(stdexec::when_all(task, ctx.run()));
+}
