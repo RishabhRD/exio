@@ -26,5 +26,6 @@
 namespace exio {
 #ifdef EXIO_LINUX
 using io_context = exio::io_uring_context;
+using io_scheduler = exio::io_uring_scheduler;
 #endif
 } // namespace exio
