@@ -18,6 +18,7 @@
 
 #include "io_uring/io_uring_context_base.hpp"
 #include "io_uring/ops/async_read_some.hpp"
+#include "io_uring/ops/async_write_some.hpp"
 #include "io_uring/ops/schedule.hpp"
 #include "io_uring/ops/schedule_after.hpp"
 #include "posix/file/file_handle.hpp"
@@ -61,6 +62,13 @@ public:
   inline auto async_read_some(exio::posix::file_handle<is_socket> &file,
                               std::span<std::byte> buffer) const {
     return async_read_some_sender<scheduler_t, std::dynamic_extent>{
+        .fd = file.fd, .buffer = buffer, .env = {__context_}};
+  }
+
+  template <bool is_socket>
+  inline auto async_write_some(exio::posix::file_handle<is_socket> &file,
+                               std::span<std::byte const> buffer) const {
+    return async_write_some_sender<scheduler_t, std::dynamic_extent>{
         .fd = file.fd, .buffer = buffer, .env = {__context_}};
   }
 };

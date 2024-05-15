@@ -25,4 +25,10 @@ auto async_read_some(Scheduler const &sch, stream_handle_t &handle,
                      std::span<std::byte> buffer) {
   return sch.async_read_some(handle, buffer);
 }
+
+template <stream_io_scheduler Scheduler>
+auto async_write_some(Scheduler const &sch, stream_handle_t &handle,
+                      std::span<std::byte const> buffer) {
+  return sch.async_write_some(handle, buffer);
+}
 } // namespace exio

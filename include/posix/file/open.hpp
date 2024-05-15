@@ -28,7 +28,8 @@ namespace posix {
 // TODO: can we make open_flags_t a template parameter?
 //       (with supporting concepts)
 inline auto open(std::filesystem::path const &path, open_flags_t flags) {
-  auto result = ::open(path.c_str(), flags | O_CLOEXEC);
+  // TODO 0644 should not be hardcoded
+  auto result = ::open(path.c_str(), flags | O_CLOEXEC, 0644);
   if (result < 0) {
     throw_(std::system_error{errno, std::system_category()});
   }

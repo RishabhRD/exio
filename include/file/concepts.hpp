@@ -25,9 +25,13 @@ template <typename Scheduler>
 concept stream_io_scheduler =
     stdexec::scheduler<Scheduler> &&
     requires(Scheduler const &sch, stream_handle_t &handle,
-             std::span<std::byte> mutable_buffer) {
+             std::span<std::byte> mutable_buffer,
+             std::span<std::byte const> buffer) {
       {
         sch.async_read_some(handle, mutable_buffer)
+      } -> stdexec::sender_of<stdexec::set_value_t(std::size_t)>;
+      {
+        sch.async_write_some(handle, buffer)
       } -> stdexec::sender_of<stdexec::set_value_t(std::size_t)>;
     };
 } // namespace exio

@@ -19,6 +19,7 @@
 #include <chrono>
 #include <filesystem>
 #include <iostream>
+#include <span>
 #include <stdexec/exec/task.hpp>
 #include <stdexec/exec/when_any.hpp>
 
@@ -39,6 +40,22 @@ auto read_file(exio::io_scheduler sch, std::filesystem::path const &path)
   std::cout << std::endl;
 }
 
+auto write_file(exio::io_scheduler sch, std::filesystem::path const &path,
+                std::string_view data) -> exec::task<void> {
+  auto file = exio::open(
+      path, (exio::open_flags::write_only | exio::open_flags::create));
+  std::cout << "Starting to write file" << std::endl;
+  auto buffer = std::as_bytes(std::span{data});
+  co_await exio::async_write_some(sch, file, buffer);
+  std::cout << "Done writing file" << std::endl;
+}
+
+auto write_read_file(exio::io_scheduler sch, std::filesystem::path const &path,
+                     std::string_view data) -> exec::task<void> {
+  co_await write_file(sch, path, data);
+  co_await read_file(sch, path);
+}
+
 auto say_bye_after(exio::io_context &ctx, int sec) -> exec::task<void> {
   co_await exio::schedule_after(ctx.get_scheduler(), std::chrono::seconds(sec));
   std::cout << "Couldn't read file in time, Byee!!" << std::endl;
@@ -47,9 +64,10 @@ auto say_bye_after(exio::io_context &ctx, int sec) -> exec::task<void> {
 int main() {
   exio::io_context ctx;
   auto sch = ctx.get_scheduler();
-  std::filesystem::path path{"/dev/random"};
+  std::filesystem::path path{"/tmp/myfile"};
+  std::string data = "somebyte";
   std::jthread io_thread{[&] { ctx.run_until_stopped(); }};
   stdexec::sync_wait(
-      exec::when_any(read_file(sch, path), say_bye_after(ctx, 4)) |
+      exec::when_any(write_read_file(sch, path, data), say_bye_after(ctx, 4)) |
       stdexec::then([&ctx] { ctx.request_stop(); }));
 }
