@@ -61,7 +61,7 @@ struct async_read_some_operation {
                                -cqe.res, std::system_category())));
       } else {
         stdexec::set_value(static_cast<Receiver &&>(this->__receiver_),
-                           cqe.res);
+                           static_cast<std::size_t>(cqe.res));
       }
     }
   };

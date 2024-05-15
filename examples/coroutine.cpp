@@ -30,15 +30,13 @@ auto print_file_details(exio::io_scheduler sch,
   co_await exec::schedule_after(sch, 1s);
   std::cout << "Starting to read file" << std::endl;
   auto file = exio::open(path, exio::open_flags::read_only);
-  // TODO: async_read_some can't be used as coroutine
-  //
-  // std::array<std::byte, 8> buffer;
-  // auto num_bytes = co_await exio::async_read_some(sch, file, buffer);
-  // std::cout << "Content: ";
-  // for (std::size_t i{}; i < num_bytes; ++i) {
-  //   std::cout << char(buffer[i]);
-  // }
-  // std::cout << std::endl;
+  std::array<std::byte, 8> buffer;
+  auto num_bytes = co_await exio::async_read_some(sch, file, buffer);
+  std::cout << "Content: ";
+  for (std::size_t i{}; i < num_bytes; ++i) {
+    std::cout << char(buffer[i]);
+  }
+  std::cout << std::endl;
 }
 
 auto say_bye_after(exio::io_scheduler sch, int sec) -> exec::task<void> {
@@ -52,5 +50,5 @@ int main() {
   std::filesystem::path path{"/home/rishabh/myfile"};
   std::jthread io_thread{[&] { ctx.run_until_empty(); }};
   stdexec::sync_wait(
-      stdexec::when_all(print_file_details(sch, path), say_bye_after(sch, 5)));
+      stdexec::when_all(print_file_details(sch, path), say_bye_after(sch, 2)));
 }
