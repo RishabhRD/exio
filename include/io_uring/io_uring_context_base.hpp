@@ -25,7 +25,6 @@
 #else
 #include <linux/io_uring.h>
 
-#include "timer/concepts.hpp"
 #include <stdexec/stdexec/execution.hpp>
 
 #include <stdexec/exec/__detail/__atomic_intrusive_queue.hpp>

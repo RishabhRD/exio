@@ -23,7 +23,7 @@ int main() {
   using namespace std::chrono_literals;
   exio::io_context ctx;
   auto sch = ctx.get_scheduler();
-  auto fd = exio::open(std::filesystem::path("/home/rishabh/myfile"),
+  auto fd = exio::open(std::filesystem::path("/dev/random"),
                        exio::open_flags::read_only);
   std::array<std::byte, 8> buffer;
   auto task =

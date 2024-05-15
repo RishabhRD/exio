@@ -20,6 +20,7 @@
 #include <filesystem>
 #include <iostream>
 #include <stdexec/exec/task.hpp>
+#include <stdexec/exec/when_any.hpp>
 
 using namespace std::chrono_literals;
 
@@ -27,8 +28,8 @@ auto print_file_details(exio::io_scheduler sch,
                         std::filesystem::path const &path) -> exec::task<void> {
   std::cout << "Waiting for a sec" << std::endl;
   co_await exio::schedule_after(sch, 1s);
-  std::cout << "Starting to read file" << std::endl;
   auto file = exio::open(path, exio::open_flags::read_only);
+  std::cout << "Starting to read file" << std::endl;
   std::array<std::byte, 8> buffer;
   auto num_bytes = co_await exio::async_read_some(sch, file, buffer);
   std::cout << "Content: ";
@@ -40,15 +41,15 @@ auto print_file_details(exio::io_scheduler sch,
 
 auto say_bye_after(exio::io_context &ctx, int sec) -> exec::task<void> {
   co_await exio::schedule_after(ctx.get_scheduler(), std::chrono::seconds(sec));
-  std::cout << "Bye!" << std::endl;
-  ctx.request_stop();
+  std::cout << "Byee!!" << std::endl;
 }
 
 int main() {
   exio::io_context ctx;
   auto sch = ctx.get_scheduler();
-  std::filesystem::path path{"/home/rishabh/myfile"};
+  std::filesystem::path path{"/dev/random"};
   std::jthread io_thread{[&] { ctx.run_until_stopped(); }};
   stdexec::sync_wait(
-      stdexec::when_all(print_file_details(sch, path), say_bye_after(ctx, 2)));
+      exec::when_any(print_file_details(sch, path), say_bye_after(ctx, 4)) |
+      stdexec::then([&ctx] { ctx.request_stop(); }));
 }
