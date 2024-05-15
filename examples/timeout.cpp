@@ -16,12 +16,11 @@
 
 #include "exio.hpp"
 #include <iostream>
-#include <stdexec/exec/timed_scheduler.hpp>
 int main() {
   using namespace std::chrono_literals;
   exio::io_context ctx;
   auto sch = ctx.get_scheduler();
-  auto task = exec::schedule_after(sch, 1s) //
+  auto task = exio::schedule_after(sch, 1s) //
               | stdexec::then([&ctx] {
                   std::cout << "Hello world!" << std::endl;
                   ctx.request_stop();

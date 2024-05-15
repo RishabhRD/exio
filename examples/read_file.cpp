@@ -18,7 +18,6 @@
 #include <cstdint>
 #include <filesystem>
 #include <iostream>
-#include <stdexec/exec/timed_scheduler.hpp>
 
 int main() {
   using namespace std::chrono_literals;
@@ -28,7 +27,7 @@ int main() {
                        exio::open_flags::read_only);
   std::array<std::byte, 8> buffer;
   auto task =
-      exec::schedule_after(sch, 1s) |
+      exio::schedule_after(sch, 1s) |
       stdexec::then([] { std::cout << "Hello world!" << std::endl; }) |
       stdexec::let_value([sch, &fd, &buffer] {
         return exio::async_read_some(sch, fd, std::span<std::byte>(buffer));

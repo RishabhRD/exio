@@ -21,6 +21,7 @@
 #include "io_uring/ops/schedule.hpp"
 #include "io_uring/ops/schedule_after.hpp"
 #include "posix/file/file_handle.hpp"
+#include <chrono>
 #include <span>
 
 namespace exio {
@@ -40,23 +41,18 @@ public:
     return __schedule_sender<scheduler_t>{.env = {__sched.__context_}};
   }
 
-  friend auto tag_invoke(exec::now_t, const scheduler_t &) noexcept
-      -> std::chrono::time_point<std::chrono::steady_clock> {
-    return std::chrono::steady_clock::now();
-  }
+  auto now() const noexcept { return std::chrono::steady_clock::now(); }
 
-  friend auto tag_invoke(exec::schedule_after_t, const scheduler_t &__sched,
-                         std::chrono::nanoseconds __duration) {
-    return __schedule_after_sender<scheduler_t>{.__env_ = {__sched.__context_},
+  auto schedule_after(std::chrono::nanoseconds __duration) const {
+    return __schedule_after_sender<scheduler_t>{.__env_ = {__context_},
                                                 .__duration_ = __duration};
   }
 
   template <class _Clock, class _Duration>
-  friend auto
-  tag_invoke(exec::schedule_at_t, const scheduler_t &__sched,
-             const std::chrono::time_point<_Clock, _Duration> &__time_point) {
+  auto schedule_at(
+      std::chrono::time_point<_Clock, _Duration> const &__time_point) const {
     auto __duration = __time_point - _Clock::now();
-    return __schedule_after_sender<scheduler_t>{.__env_ = {__sched.__context_},
+    return __schedule_after_sender<scheduler_t>{.__env_ = {__context_},
                                                 .__duration_ = __duration};
   }
 

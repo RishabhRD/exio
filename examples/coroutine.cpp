@@ -20,14 +20,13 @@
 #include <filesystem>
 #include <iostream>
 #include <stdexec/exec/task.hpp>
-#include <stdexec/exec/timed_scheduler.hpp>
 
 using namespace std::chrono_literals;
 
 auto print_file_details(exio::io_scheduler sch,
                         std::filesystem::path const &path) -> exec::task<void> {
   std::cout << "Waiting for a sec" << std::endl;
-  co_await exec::schedule_after(sch, 1s);
+  co_await exio::schedule_after(sch, 1s);
   std::cout << "Starting to read file" << std::endl;
   auto file = exio::open(path, exio::open_flags::read_only);
   std::array<std::byte, 8> buffer;
@@ -40,7 +39,7 @@ auto print_file_details(exio::io_scheduler sch,
 }
 
 auto say_bye_after(exio::io_context &ctx, int sec) -> exec::task<void> {
-  co_await exec::schedule_after(ctx.get_scheduler(), std::chrono::seconds(sec));
+  co_await exio::schedule_after(ctx.get_scheduler(), std::chrono::seconds(sec));
   std::cout << "Bye!" << std::endl;
   ctx.request_stop();
 }
