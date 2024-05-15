@@ -39,16 +39,17 @@ auto print_file_details(exio::io_scheduler sch,
   std::cout << std::endl;
 }
 
-auto say_bye_after(exio::io_scheduler sch, int sec) -> exec::task<void> {
-  co_await exec::schedule_after(sch, std::chrono::seconds(sec));
+auto say_bye_after(exio::io_context &ctx, int sec) -> exec::task<void> {
+  co_await exec::schedule_after(ctx.get_scheduler(), std::chrono::seconds(sec));
   std::cout << "Bye!" << std::endl;
+  ctx.request_stop();
 }
 
 int main() {
   exio::io_context ctx;
   auto sch = ctx.get_scheduler();
   std::filesystem::path path{"/home/rishabh/myfile"};
-  std::jthread io_thread{[&] { ctx.run_until_empty(); }};
+  std::jthread io_thread{[&] { ctx.run_until_stopped(); }};
   stdexec::sync_wait(
-      stdexec::when_all(print_file_details(sch, path), say_bye_after(sch, 2)));
+      stdexec::when_all(print_file_details(sch, path), say_bye_after(ctx, 2)));
 }
