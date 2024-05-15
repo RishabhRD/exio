@@ -41,7 +41,7 @@ auto print_file_details(exio::io_scheduler sch,
 
 auto say_bye_after(exio::io_context &ctx, int sec) -> exec::task<void> {
   co_await exio::schedule_after(ctx.get_scheduler(), std::chrono::seconds(sec));
-  std::cout << "Byee!!" << std::endl;
+  std::cout << "Couldn't read file in time, Byee!!" << std::endl;
 }
 
 int main() {
