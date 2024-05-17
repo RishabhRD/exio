@@ -25,15 +25,27 @@
 #endif
 
 namespace exio {
-struct open_t {
+struct open_stream_t {
   template <typename... PlatformDependentArgs>
   auto operator()(std::filesystem::path const &path, open_flags_t flags,
                   PlatformDependentArgs &&...args) const {
 #ifdef EXIO_POSIX
-    return posix::open(path, flags, args...);
+    return posix::open_stream(path, flags, args...);
 #endif
   }
 };
 
-constexpr open_t open{};
+constexpr open_stream_t open_stream{};
+
+struct open_file_t {
+  template <typename... PlatformDependentArgs>
+  auto operator()(std::filesystem::path const &path, open_flags_t flags,
+                  PlatformDependentArgs &&...args) const {
+#ifdef EXIO_POSIX
+    return posix::open_file(path, flags, args...);
+#endif
+  }
+};
+
+constexpr open_file_t open_file{};
 } // namespace exio

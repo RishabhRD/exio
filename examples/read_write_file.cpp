@@ -29,7 +29,7 @@ auto read_file(exio::io_scheduler sch, std::filesystem::path const &path)
     -> exec::task<void> {
   std::cout << "Waiting for a sec" << std::endl;
   co_await exio::schedule_after(sch, 1s);
-  auto file = exio::open(path, exio::open_flags::read_only);
+  auto file = exio::open_file(path, exio::open_flags::read_only);
   std::cout << "Starting to read file" << std::endl;
   std::array<std::byte, 8> buffer;
   auto num_bytes = co_await exio::async_read_some(sch, file, buffer);
@@ -42,7 +42,7 @@ auto read_file(exio::io_scheduler sch, std::filesystem::path const &path)
 
 auto write_file(exio::io_scheduler sch, std::filesystem::path const &path,
                 std::string_view data) -> exec::task<void> {
-  auto file = exio::open(
+  auto file = exio::open_file(
       path, (exio::open_flags::write_only | exio::open_flags::create));
   std::cout << "Starting to write file" << std::endl;
   auto buffer = std::as_bytes(std::span{data});

@@ -15,6 +15,7 @@
  */
 
 #include "exio.hpp"
+#include "file/concepts.hpp"
 #include <cstdint>
 #include <filesystem>
 #include <iostream>
@@ -23,8 +24,8 @@ int main() {
   using namespace std::chrono_literals;
   exio::io_context ctx;
   auto sch = ctx.get_scheduler();
-  auto fd = exio::open(std::filesystem::path("/dev/random"),
-                       exio::open_flags::read_only);
+  auto fd = exio::open_file(std::filesystem::path("/dev/random"),
+                            exio::open_flags::read_only);
   std::array<std::byte, 8> buffer;
   auto task =
       exio::schedule_after(sch, 1s) |

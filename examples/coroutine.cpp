@@ -28,7 +28,7 @@ auto read_file(exio::io_scheduler sch, std::filesystem::path const &path)
     -> exec::task<void> {
   std::cout << "Waiting for a sec" << std::endl;
   co_await exio::schedule_after(sch, 1s);
-  auto file = exio::open(path, exio::open_flags::read_only);
+  auto file = exio::open_stream(path, exio::open_flags::read_only);
   std::cout << "Starting to read file" << std::endl;
   std::array<std::byte, 8> buffer;
   auto num_bytes = co_await exio::async_read_some(sch, file, buffer);

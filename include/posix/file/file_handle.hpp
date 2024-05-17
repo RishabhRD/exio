@@ -19,7 +19,9 @@
 #include <stdexec/exec/linux/safe_file_descriptor.hpp>
 namespace exio {
 namespace posix {
-template <bool IsSocket> struct file_handle {
+template <bool IsStream, bool IsFile, bool IsSocket> struct file_handle {
+  constexpr static bool is_stream = IsStream;
+  constexpr static bool is_file = IsFile;
   constexpr static bool is_socket = IsSocket;
 
   exec::safe_file_descriptor fd;

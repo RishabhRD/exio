@@ -21,10 +21,11 @@
 #include <stdexec/stdexec/execution.hpp>
 
 namespace exio {
-template <typename Scheduler>
-concept stream_io_scheduler =
+namespace __file_details {
+template <typename Scheduler, typename Stream>
+concept __stream_io_scheduler =
     stdexec::scheduler<Scheduler> &&
-    requires(Scheduler const &sch, stream_handle_t &handle,
+    requires(Scheduler const &sch, Stream &handle,
              std::span<std::byte> mutable_buffer,
              std::span<std::byte const> buffer) {
       {
@@ -34,4 +35,15 @@ concept stream_io_scheduler =
         sch.async_write_some(handle, buffer)
       } -> stdexec::sender_of<stdexec::set_value_t(std::size_t)>;
     };
+
+template <typename Scheduler, typename File>
+concept __file_io_scheduler = __stream_io_scheduler<Scheduler, File>;
+} // namespace __file_details
+template <typename Scheduler>
+concept stream_io_scheduler =
+    __file_details::__stream_io_scheduler<Scheduler, stream_handle_t>;
+
+template <typename Scheduler>
+concept file_io_scheduler =
+    __file_details::__file_io_scheduler<Scheduler, file_handle_t>;
 } // namespace exio

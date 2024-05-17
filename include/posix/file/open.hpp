@@ -25,8 +25,7 @@
 namespace exio {
 namespace posix {
 
-// TODO can we make open_flags_t a template parameter?
-//       (with supporting concepts)
+namespace __posix_open_details {
 inline auto open(std::filesystem::path const &path, open_flags_t flags,
                  int permission = 0644) {
   auto result = ::open(path.c_str(), flags | O_CLOEXEC, permission);
@@ -34,7 +33,20 @@ inline auto open(std::filesystem::path const &path, open_flags_t flags,
     throw_(std::system_error{errno, std::system_category()});
   }
 
-  return exio::posix::file_handle<false>{exec::safe_file_descriptor{result}};
+  return exec::safe_file_descriptor{result};
+}
+} // namespace __posix_open_details
+
+inline auto open_stream(std::filesystem::path const &path, open_flags_t flags,
+                        int permission = 0644) {
+  return exio::posix::file_handle<true, false, false>{
+      __posix_open_details::open(path, flags, permission)};
+}
+
+inline auto open_file(std::filesystem::path const &path, open_flags_t flags,
+                      int permission = 0644) {
+  return exio::posix::file_handle<true, true, false>{
+      __posix_open_details::open(path, flags, permission)};
 }
 } // namespace posix
 } // namespace exio
