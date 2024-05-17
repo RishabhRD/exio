@@ -37,7 +37,18 @@ concept __stream_io_scheduler =
     };
 
 template <typename Scheduler, typename File>
-concept __file_io_scheduler = __stream_io_scheduler<Scheduler, File>;
+concept __file_io_scheduler =
+    __stream_io_scheduler<Scheduler, File> &&
+    requires(Scheduler const &sch, File &handle,
+             std::span<std::byte> mutable_buffer,
+             std::span<std::byte const> buffer, std::size_t offset) {
+      {
+        sch.async_read_some_at(handle, offset, mutable_buffer)
+      } -> stdexec::sender_of<stdexec::set_value_t(std::size_t)>;
+      {
+        sch.async_write_some_at(handle, offset, buffer)
+      } -> stdexec::sender_of<stdexec::set_value_t(std::size_t)>;
+    };
 } // namespace __file_details
 template <typename Scheduler>
 concept stream_io_scheduler =

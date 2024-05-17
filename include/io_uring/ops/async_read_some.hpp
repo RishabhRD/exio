@@ -35,12 +35,13 @@ struct async_read_some_operation {
   struct impl : public __stoppable_op_base<Receiver> {
     int fd;
     std::span<std::byte, Extent> buffer;
+    std::size_t offset;
 
     impl(context_t &ctx_, int fd_, std::span<std::byte, Extent> buffer_,
-         Receiver &&receiver_)
+         std::size_t offset_, Receiver &&receiver_)
         : __stoppable_op_base<Receiver>{ctx_,
                                         static_cast<Receiver &&>(receiver_)},
-          fd{fd_}, buffer{buffer_} {}
+          fd{fd_}, buffer{buffer_}, offset{offset_} {}
 
     static constexpr auto ready() noexcept -> std::false_type { return {}; }
 
@@ -50,7 +51,7 @@ struct async_read_some_operation {
       new_sqe.fd = fd;
       new_sqe.addr = std::uint64_t(buffer.data());
       new_sqe.len = std::uint32_t(buffer.size());
-      new_sqe.off = 0;
+      new_sqe.off = offset;
       sqe = new_sqe;
     }
 
@@ -73,6 +74,7 @@ template <typename Scheduler, std::size_t Extent>
 struct async_read_some_sender {
   int fd;
   std::span<std::byte, Extent> buffer;
+  std::size_t offset;
   using env_t = io_uring_env_t<Scheduler>;
   env_t env;
 
@@ -104,7 +106,7 @@ struct async_read_some_sender {
     return stdexec::__t<
         async_read_some_operation<stdexec::__id<Receiver>, Extent>>(
         std::in_place, *(sender.env.ctx), sender.fd, sender.buffer,
-        static_cast<Receiver &&>(receiver));
+        sender.offset, static_cast<Receiver &&>(receiver));
   }
 };
 
