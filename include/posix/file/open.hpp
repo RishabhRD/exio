@@ -26,9 +26,9 @@ namespace exio {
 namespace posix {
 
 namespace __posix_open_details {
-inline auto open(std::filesystem::path const &path, open_flags_t flags,
+inline auto open(std::string_view path, open_flags_t flags,
                  int permission = 0644) {
-  auto result = ::open(path.c_str(), flags | O_CLOEXEC, permission);
+  auto result = ::open(path.data(), flags | O_CLOEXEC, permission);
   if (result < 0) {
     throw_(std::system_error{errno, std::system_category()});
   }
@@ -37,7 +37,7 @@ inline auto open(std::filesystem::path const &path, open_flags_t flags,
 }
 } // namespace __posix_open_details
 
-inline auto open_stream(std::filesystem::path const &path, open_flags_t flags,
+inline auto open_stream(std::string_view path, open_flags_t flags,
                         int permission = 0644) {
   return exio::posix::file_handle<true, false, false>{
       __posix_open_details::open(path, flags, permission)};
@@ -46,7 +46,7 @@ inline auto open_stream(std::filesystem::path const &path, open_flags_t flags,
 inline auto open_file(std::filesystem::path const &path, open_flags_t flags,
                       int permission = 0644) {
   return exio::posix::file_handle<true, true, false>{
-      __posix_open_details::open(path, flags, permission)};
+      __posix_open_details::open(path.c_str(), flags, permission)};
 }
 } // namespace posix
 } // namespace exio

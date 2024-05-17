@@ -17,14 +17,13 @@
 #include "exio.hpp"
 #include "io_context.hpp"
 #include <chrono>
-#include <filesystem>
 #include <iostream>
 #include <stdexec/exec/task.hpp>
 #include <stdexec/exec/when_any.hpp>
 
 using namespace std::chrono_literals;
 
-auto read_file(exio::io_scheduler sch, std::filesystem::path const &path)
+auto read_stream(exio::io_scheduler sch, std::string_view path)
     -> exec::task<void> {
   std::cout << "Waiting for a sec" << std::endl;
   co_await exio::schedule_after(sch, 1s);
@@ -47,9 +46,9 @@ auto say_bye_after(exio::io_context &ctx, int sec) -> exec::task<void> {
 int main() {
   exio::io_context ctx;
   auto sch = ctx.get_scheduler();
-  std::filesystem::path path{"/dev/random"};
+  std::string_view path{"/dev/random"};
   std::jthread io_thread{[&] { ctx.run_until_stopped(); }};
   stdexec::sync_wait(
-      exec::when_any(read_file(sch, path), say_bye_after(ctx, 4)) |
+      exec::when_any(read_stream(sch, path), say_bye_after(ctx, 4)) |
       stdexec::then([&ctx] { ctx.request_stop(); }));
 }

@@ -27,7 +27,7 @@
 namespace exio {
 struct open_stream_t {
   template <typename... PlatformDependentArgs>
-  auto operator()(std::filesystem::path const &path, open_flags_t flags,
+  auto operator()(std::string_view path, open_flags_t flags,
                   PlatformDependentArgs &&...args) const {
 #ifdef EXIO_POSIX
     return posix::open_stream(path, flags, args...);

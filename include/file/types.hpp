@@ -23,8 +23,7 @@
 
 namespace exio {
 using stream_handle_t =
-    std::invoke_result_t<open_stream_t, std::filesystem::path const &,
-                         open_flags_t>;
+    std::invoke_result_t<open_stream_t, std::string_view &, open_flags_t>;
 using file_handle_t =
     std::invoke_result_t<open_file_t, std::filesystem::path const &,
                          open_flags_t>;
