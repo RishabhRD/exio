@@ -26,9 +26,11 @@
 
 namespace exio {
 struct open_t {
-  auto operator()(std::filesystem::path const &path, open_flags_t flags) const {
+  template <typename... PlatformDependentArgs>
+  auto operator()(std::filesystem::path const &path, open_flags_t flags,
+                  PlatformDependentArgs &&...args) const {
 #ifdef EXIO_POSIX
-    return posix::open(path, flags);
+    return posix::open(path, flags, args...);
 #endif
   }
 };
