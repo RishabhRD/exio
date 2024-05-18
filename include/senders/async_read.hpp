@@ -39,10 +39,20 @@ struct async_read_receiver {
 
   using receiver_concept = stdexec::receiver_t;
 
+  template <typename... Args>
   STDEXEC_MEMFN_DECL(auto set_value)
-  (this async_read_receiver const &self, std::size_t bytes_read) {
-    self.op->complete(bytes_read);
+  (this async_read_receiver const &self, Args &&...args) {
+    self.op->complete(std::forward<Args>(args)...);
   }
+
+  template <typename... Args>
+  STDEXEC_MEMFN_DECL(auto set_error)
+  (this async_read_receiver const &self, Args &&...args) {
+    self.op->complete_error(std::forward<Args>(args)...);
+  }
+
+  STDEXEC_MEMFN_DECL(auto set_stopped)
+  (this async_read_receiver const &self) { self.op->complete_stopped(); }
 
   STDEXEC_MEMFN_DECL(auto get_env)
   (this async_read_receiver const &self) noexcept {
@@ -92,6 +102,15 @@ struct async_read_operation_state {
     } else {
       stdexec::set_value(static_cast<Receiver &&>(rcvr));
     }
+  }
+
+  template <typename... Args> auto complete_error(Args &&...args) {
+    stdexec::set_error(static_cast<Receiver &&>(rcvr),
+                       std::forward<Args>(args)...);
+  }
+
+  auto complete_stopped() {
+    stdexec::set_stopped(static_cast<Receiver &&>(rcvr));
   }
 };
 
