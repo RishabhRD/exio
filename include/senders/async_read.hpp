@@ -33,23 +33,23 @@ struct async_read_receiver {
   async_read_operation_state<Scheduler, Handle, Receiver> *op;
 
   using receiver_concept = stdexec::receiver_t;
+  using __id = async_read_receiver;
+  using __t = async_read_receiver;
 
   template <typename... Args>
   STDEXEC_MEMFN_DECL(auto set_value)
-  (this async_read_receiver const &self, Args &&...args) noexcept {
+  (this async_read_receiver &&self, Args &&...args) noexcept {
     self.op->complete(std::forward<Args>(args)...);
   }
 
   template <typename... Args>
   STDEXEC_MEMFN_DECL(auto set_error)
-  (this async_read_receiver const &self, Args &&...args) noexcept {
+  (this async_read_receiver &&self, Args &&...args) noexcept {
     self.op->complete_error(std::forward<Args>(args)...);
   }
 
   STDEXEC_MEMFN_DECL(auto set_stopped)
-  (this async_read_receiver const &self) noexcept {
-    self.op->complete_stopped();
-  }
+  (this async_read_receiver &&self) noexcept { self.op->complete_stopped(); }
 
   STDEXEC_MEMFN_DECL(auto get_env)
   (this async_read_receiver const &self) noexcept {
