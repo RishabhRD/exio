@@ -73,7 +73,7 @@ struct async_read_operation_state {
         rcvr(static_cast<Receiver &&>(rcvr_)), child_op_state(connect()) {}
 
   STDEXEC_MEMFN_DECL(auto start)
-  (this async_read_operation_state &self) {
+  (this async_read_operation_state &self) noexcept {
     stdexec::start(self.child_op_state);
   }
 
