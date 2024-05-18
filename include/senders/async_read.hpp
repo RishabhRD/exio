@@ -25,11 +25,6 @@ namespace exio {
 namespace __async_read {
 using namespace stdexec::tags;
 
-template <typename Scheduler, typename Handle>
-using async_read_some_sender_type =
-    std::invoke_result_t<exio::async_read_some_t, Scheduler, Handle &,
-                         std::span<std::byte>>;
-
 template <typename Scheduler, typename Handle, typename Receiver>
 struct async_read_operation_state;
 
@@ -62,11 +57,11 @@ struct async_read_receiver {
 
 template <typename Scheduler, typename Handle, typename Receiver>
 struct async_read_operation_state {
-  using higher_order_receiver =
-      async_read_receiver<Scheduler, Handle, Receiver>;
+  using outer_receiver = async_read_receiver<Scheduler, Handle, Receiver>;
+  using inner_sender = std::invoke_result_t<exio::async_read_some_t, Scheduler,
+                                            Handle &, std::span<std::byte>>;
   using child_op_state_t =
-      stdexec::connect_result_t<async_read_some_sender_type<Scheduler, Handle>,
-                                higher_order_receiver>;
+      stdexec::connect_result_t<inner_sender, outer_receiver>;
   Scheduler sch;
   Handle &handle;
   std::span<std::byte> buffer;
