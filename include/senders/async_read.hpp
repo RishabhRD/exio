@@ -84,8 +84,7 @@ struct async_read_operation_state {
 
   auto connect() {
     auto sndr = exio::async_read_some(sch, handle, buffer);
-    return stdexec::connect(
-        sndr, async_read_receiver<Scheduler, Handle, Receiver>{.op = this});
+    return stdexec::connect(sndr, outer_receiver{.op = this});
   }
 
   auto complete(std::size_t num_bytes_read) {
