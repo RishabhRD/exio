@@ -85,7 +85,9 @@ struct async_read_operation_state {
 
   auto complete(std::size_t num_bytes_read) {
     if (num_bytes_read < buffer.size()) {
-      buffer = std::span{std::begin(buffer) + num_bytes_read, std::end(buffer)};
+      using diff_type = std::span<std::byte>::difference_type;
+      buffer = std::span{std::begin(buffer) + diff_type(num_bytes_read),
+                         std::end(buffer)};
       child_op_state = connect();
     } else {
       stdexec::set_value(static_cast<Receiver &&>(rcvr));
