@@ -60,6 +60,8 @@ struct async_read_operation_state {
   using outer_receiver = async_read_receiver<Scheduler, Handle, Receiver>;
   using inner_sender = std::invoke_result_t<exio::async_read_some_t, Scheduler,
                                             Handle &, std::span<std::byte>>;
+  static_assert(
+      stdexec::tag_invocable<stdexec::connect_t, inner_sender, outer_receiver>);
   using child_op_state_t =
       stdexec::connect_result_t<inner_sender, outer_receiver>;
   Scheduler sch;
