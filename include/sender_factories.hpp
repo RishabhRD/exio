@@ -22,8 +22,7 @@
 namespace exio {
 struct async_read_some_t {
   template <stream_io_scheduler Scheduler, typename handle_t>
-    requires(std::same_as<handle_t, stream_handle_t> ||
-             std::same_as<handle_t, file_handle_t>)
+    requires(std::same_as<handle_t, stream_handle_t>)
   auto operator()(Scheduler const &sch, handle_t &handle,
                   std::span<std::byte> buffer) const {
     return sch.async_read_some(handle, buffer);
@@ -33,12 +32,33 @@ constexpr async_read_some_t async_read_some{};
 
 struct async_write_some_t {
   template <stream_io_scheduler Scheduler, typename handle_t>
-    requires(std::same_as<handle_t, stream_handle_t> ||
-             std::same_as<handle_t, file_handle_t>)
+    requires(std::same_as<handle_t, stream_handle_t>)
   auto operator()(Scheduler const &sch, handle_t &handle,
                   std::span<std::byte const> buffer) const {
     return sch.async_write_some(handle, buffer);
   }
 };
 constexpr async_write_some_t async_write_some{};
+
+struct async_read_some_at_t {
+  template <stream_io_scheduler Scheduler, typename handle_t>
+    requires(std::same_as<handle_t, stream_handle_t> ||
+             std::same_as<handle_t, file_handle_t>)
+  auto operator()(Scheduler const &sch, handle_t &handle, std::size_t offset,
+                  std::span<std::byte> buffer) const {
+    return sch.async_read_some_at(handle, offset, buffer);
+  }
+};
+constexpr async_read_some_at_t async_read_some_at{};
+
+struct async_write_some_at_t {
+  template <stream_io_scheduler Scheduler, typename handle_t>
+    requires(std::same_as<handle_t, stream_handle_t> ||
+             std::same_as<handle_t, file_handle_t>)
+  auto operator()(Scheduler const &sch, handle_t &handle, std::size_t offset,
+                  std::span<std::byte const> buffer) const {
+    return sch.async_write_some_at(handle, offset, buffer);
+  }
+};
+constexpr async_write_some_at_t async_write_some_at{};
 } // namespace exio
