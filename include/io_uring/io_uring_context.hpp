@@ -35,11 +35,8 @@ public:
   friend auto operator==(const scheduler_t &__lhs, const scheduler_t &__rhs)
       -> bool = default;
 
-  STDEXEC_MEMFN_FRIEND(schedule);
-
-  STDEXEC_MEMFN_DECL(auto schedule)
-  (this const scheduler_t &__sched)->__schedule_sender<scheduler_t> {
-    return __schedule_sender<scheduler_t>{.env = {__sched.__context_}};
+  auto schedule() const -> __schedule_sender<scheduler_t> {
+    return __schedule_sender<scheduler_t>{.env = {__context_}};
   }
 
   auto now() const noexcept { return std::chrono::steady_clock::now(); }
