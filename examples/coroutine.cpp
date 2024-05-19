@@ -31,9 +31,7 @@ auto read_stream(exio::io_scheduler sch, std::string_view path)
   auto file = exio::open_stream(path, exio::open_flags::read_only);
   std::cout << "Starting to read file" << std::endl;
   std::array<std::byte, 8> buffer;
-  auto sndr = exio::async_read(sch, file, buffer);
-  using sndr_t = decltype(sndr);
-  co_await sndr;
+  co_await exio::async_read(sch, file, buffer);
   std::cout << "Content: ";
   for (auto c : buffer) {
     std::cout << char(c);
