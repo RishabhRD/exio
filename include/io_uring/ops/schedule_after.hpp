@@ -146,22 +146,21 @@ public:
   std::chrono::nanoseconds __duration_;
 
 private:
-  STDEXEC_MEMFN_DECL(auto get_env)
-  (this const __schedule_after_sender &__sender) noexcept -> env_t {
-    return __sender.__env_;
-  }
+  auto get_env() const noexcept -> env_t { return __env_; }
 
   using __completion_sigs =
       stdexec::completion_signatures<stdexec::set_value_t(),
                                      stdexec::set_error_t(std::exception_ptr),
                                      stdexec::set_stopped_t()>;
 
+  // TODO converting to member function doesn't work for this
   template <class _Env>
   STDEXEC_MEMFN_DECL(auto get_completion_signatures)
   (this const __schedule_after_sender &, _Env) noexcept -> __completion_sigs {
     return {};
   }
 
+  // TODO converting to member function doesn't work for this
   template <stdexec::receiver_of<__completion_sigs> _Receiver>
   STDEXEC_MEMFN_DECL(auto connect)
   (this const __schedule_after_sender &__sender, _Receiver &&__receiver)
