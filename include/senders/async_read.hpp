@@ -37,7 +37,7 @@ struct async_read_receiver {
   using __t = async_read_receiver;
 
   template <typename... Args> void set_value(Args &&...args) noexcept {
-    op->complate(std::forward<Args>(args)...);
+    op->complete(std::forward<Args>(args)...);
   }
 
   template <typename... Args> void set_error(Args &&...args) noexcept {
