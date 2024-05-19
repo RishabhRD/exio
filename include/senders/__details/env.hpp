@@ -16,13 +16,19 @@
 
 #pragma once
 
-#include "file/concepts.hpp"
-#include "file/open.hpp"
-#include "file/open_flags.hpp"
-#include "io_context.hpp"
-#include "senders/async_read.hpp"
-#include "senders/async_read_some.hpp"
-#include "senders/async_read_some_at.hpp"
-#include "senders/async_write_some.hpp"
-#include "senders/async_write_some_at.hpp"
-#include "timer/concepts.hpp"
+#include <stdexec/stdexec/execution.hpp>
+
+namespace exio {
+namespace __env_details {
+using namespace stdexec::tags;
+template <typename Scheduler> struct env_t {
+  Scheduler sch;
+
+  friend auto
+  tag_invoke(stdexec::get_completion_scheduler_t<stdexec::set_value_t>,
+             env_t const &env) noexcept -> Scheduler {
+    return env.sch;
+  }
+};
+} // namespace __env_details
+} // namespace exio

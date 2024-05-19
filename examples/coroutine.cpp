@@ -17,6 +17,7 @@
 #include "exio.hpp"
 #include "io_context.hpp"
 #include <chrono>
+#include <concepts>
 #include <iostream>
 #include <stdexec/exec/task.hpp>
 #include <stdexec/exec/when_any.hpp>
@@ -30,10 +31,10 @@ auto read_stream(exio::io_scheduler sch, std::string_view path)
   auto file = exio::open_stream(path, exio::open_flags::read_only);
   std::cout << "Starting to read file" << std::endl;
   std::array<std::byte, 8> buffer;
-  auto num_bytes = co_await exio::async_read_some(sch, file, buffer);
+  co_await exio::async_read(sch, file, buffer);
   std::cout << "Content: ";
-  for (std::size_t i{}; i < num_bytes; ++i) {
-    std::cout << char(buffer[i]);
+  for (auto c : buffer) {
+    std::cout << char(c);
   }
   std::cout << std::endl;
 }

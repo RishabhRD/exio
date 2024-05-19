@@ -17,12 +17,16 @@
 #pragma once
 
 #include "file/concepts.hpp"
-#include "file/open.hpp"
-#include "file/open_flags.hpp"
-#include "io_context.hpp"
-#include "senders/async_read.hpp"
-#include "senders/async_read_some.hpp"
-#include "senders/async_read_some_at.hpp"
-#include "senders/async_write_some.hpp"
-#include "senders/async_write_some_at.hpp"
-#include "timer/concepts.hpp"
+
+namespace exio {
+struct async_read_some_at_t {
+  template <stream_io_scheduler Scheduler, typename handle_t>
+    requires(std::same_as<handle_t, stream_handle_t> ||
+             std::same_as<handle_t, file_handle_t>)
+  auto operator()(Scheduler const &sch, handle_t &handle, std::size_t offset,
+                  std::span<std::byte> buffer) const {
+    return sch.async_read_some_at(handle, offset, buffer);
+  }
+};
+constexpr async_read_some_at_t async_read_some_at{};
+} // namespace exio
