@@ -18,9 +18,12 @@
 
 #include "senders/__details/env.hpp"
 #include "senders/async_read_some.hpp"
+#include <cstddef>
 #include <span>
+#include <stdexec/exec/__detail/__manual_lifetime.hpp>
 #include <stdexec/stdexec/execution.hpp>
 #include <type_traits>
+
 namespace exio {
 namespace __async_read {
 using namespace stdexec::tags;
@@ -33,36 +36,26 @@ struct async_read_receiver {
   async_read_operation_state<Scheduler, Handle, Receiver> *op;
 
   using receiver_concept = stdexec::receiver_t;
-  using __id = async_read_receiver;
-  using __t = async_read_receiver;
 
-  template <typename... Args> void set_value(Args &&...args) noexcept {
-    op->complete(std::forward<Args>(args)...);
-  }
-
-  template <typename... Args> void set_error(Args &&...args) noexcept {
-    op->complete_error(std::forward<Args>(args)...);
-  }
-
-  void set_stopped() noexcept { op->complete_stopped(); }
-
-  auto get_env() const noexcept { return stdexec::get_env(op->rcvr); }
+  void set_value(std::size_t num_bytes) noexcept;
+  void set_error(std::exception_ptr e) noexcept;
+  void set_stopped() noexcept;
+  auto get_env() const noexcept;
 };
 
 template <typename Scheduler, typename Handle, typename Receiver>
 struct async_read_operation_state {
   using outer_receiver = async_read_receiver<Scheduler, Handle, Receiver>;
-  using inner_sender = std::invoke_result_t<exio::async_read_some_t, Scheduler,
-                                            Handle &, std::span<std::byte>>;
-  static_assert(
-      stdexec::tag_invocable<stdexec::connect_t, inner_sender, outer_receiver>);
+  using inner_sender =
+      std::invoke_result_t<exio::async_read_some_t, Scheduler const &, Handle &,
+                           std::span<std::byte>>;
   using child_op_state_t =
       stdexec::connect_result_t<inner_sender, outer_receiver>;
   Scheduler sch;
   Handle &handle;
   std::span<std::byte> buffer;
   Receiver rcvr;
-  child_op_state_t child_op_state;
+  exec::__manual_lifetime<child_op_state_t> child_op_state;
 
   async_read_operation_state(async_read_operation_state const &) = delete;
   async_read_operation_state(async_read_operation_state &&) = delete;
@@ -71,24 +64,33 @@ struct async_read_operation_state {
   async_read_operation_state(Scheduler sch_, Handle &handle_,
                              std::span<std::byte> buffer_, Receiver &&rcvr_)
       : sch(sch_), handle(handle_), buffer(buffer_),
-        rcvr(static_cast<Receiver &&>(rcvr_)), child_op_state(connect()) {}
-
-  STDEXEC_MEMFN_DECL(auto start)
-  (this async_read_operation_state &self) noexcept {
-    stdexec::start(self.child_op_state);
+        rcvr(static_cast<Receiver &&>(rcvr_)) {
+    connect();
   }
+
+  void start() & noexcept { start_child(); }
 
   auto connect() {
-    auto sndr = exio::async_read_some(sch, handle, buffer);
-    return stdexec::connect(std::move(sndr), outer_receiver{.op = this});
+    child_op_state.__construct_with([this] {
+      return stdexec::connect(exio::async_read_some(sch, handle, buffer),
+                              outer_receiver{.op = this});
+    });
   }
+
+  auto reconnect() {
+    child_op_state.__destroy();
+    connect();
+  }
+
+  auto start_child() noexcept { stdexec::start(child_op_state.__get()); }
 
   auto complete(std::size_t num_bytes_read) {
     if (num_bytes_read < buffer.size()) {
       using diff_type = std::span<std::byte>::difference_type;
       buffer = std::span{std::begin(buffer) + diff_type(num_bytes_read),
                          std::end(buffer)};
-      child_op_state = connect();
+      reconnect();
+      start_child();
     } else {
       stdexec::set_value(static_cast<Receiver &&>(rcvr));
     }
@@ -102,7 +104,29 @@ struct async_read_operation_state {
   auto complete_stopped() {
     stdexec::set_stopped(static_cast<Receiver &&>(rcvr));
   }
+
+  ~async_read_operation_state() noexcept { child_op_state.__destroy(); }
 };
+
+template <typename Scheduler, typename Handle, typename Receiver>
+void async_read_receiver<Scheduler, Handle, Receiver>::set_value(
+    std::size_t num_bytes_read) noexcept {
+  op->complete(num_bytes_read);
+}
+template <typename Scheduler, typename Handle, typename Receiver>
+void async_read_receiver<Scheduler, Handle, Receiver>::set_error(
+    std::exception_ptr ptr) noexcept {
+  op->complete_error(ptr);
+}
+template <typename Scheduler, typename Handle, typename Receiver>
+void async_read_receiver<Scheduler, Handle, Receiver>::set_stopped() noexcept {
+  op->complete_stopped();
+}
+template <typename Scheduler, typename Handle, typename Receiver>
+auto async_read_receiver<Scheduler, Handle, Receiver>::get_env()
+    const noexcept {
+  return stdexec::empty_env{};
+}
 
 template <typename Scheduler, typename Handle> struct async_read_sender {
   using env_t = __env_details::env_t<Scheduler>;
