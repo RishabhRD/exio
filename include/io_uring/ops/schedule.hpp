@@ -70,24 +70,22 @@ private:
       stdexec::completion_signatures<stdexec::set_value_t(),
                                      stdexec::set_stopped_t()>;
 
+  // TODO doens't work with member function
   STDEXEC_MEMFN_DECL(auto get_env)
   (this const __schedule_sender &__sender) noexcept -> env_t {
     return __sender.env;
   }
 
   template <class _Env>
-  STDEXEC_MEMFN_DECL(auto get_completion_signatures)
-  (this const __schedule_sender &, _Env) noexcept -> __completion_sigs {
+  auto get_completion_signatures(_Env) const noexcept -> __completion_sigs {
     return {};
   }
 
   template <stdexec::receiver_of<__completion_sigs> _Receiver>
-  STDEXEC_MEMFN_DECL(auto connect)
-  (this const __schedule_sender &__sender, _Receiver &&__receiver)
+  auto connect(_Receiver &&__receiver) const
       -> stdexec::__t<__schedule_operation<stdexec::__id<_Receiver>>> {
     return stdexec::__t<__schedule_operation<stdexec::__id<_Receiver>>>(
-        std::in_place, *__sender.env.ctx,
-        static_cast<_Receiver &&>(__receiver));
+        std::in_place, *(env.ctx), static_cast<_Receiver &&>(__receiver));
   }
 };
 } // namespace __io_uring
