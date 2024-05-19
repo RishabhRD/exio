@@ -54,13 +54,12 @@ public:
                                                 .__duration_ = __duration};
   }
 
-  // TODO: Can Extent can be a template parameter without making concepts worse?
   template <bool is_stream, bool is_file, bool is_socket>
     requires(is_stream == true)
   inline auto async_read_some_at(
       exio::posix::file_handle<is_stream, is_file, is_socket> &file,
       std::size_t offset, std::span<std::byte> buffer) const {
-    return async_read_some_sender<scheduler_t, std::dynamic_extent>{
+    return async_read_some_sender<scheduler_t>{
         .fd = file.fd, .buffer = buffer, .offset = offset, .env = {__context_}};
   }
 
@@ -69,7 +68,7 @@ public:
   inline auto async_write_some_at(
       exio::posix::file_handle<is_stream, is_file, is_socket> &file,
       std::size_t offset, std::span<std::byte const> buffer) const {
-    return async_write_some_sender<scheduler_t, std::dynamic_extent>{
+    return async_write_some_sender<scheduler_t>{
         .fd = file.fd, .buffer = buffer, .offset = offset, .env = {__context_}};
   }
 
