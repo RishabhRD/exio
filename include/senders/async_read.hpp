@@ -152,8 +152,7 @@ template <typename Scheduler, typename Handle> struct async_read_sender {
   template <stdexec::receiver_of<completion_sigs> Receiver>
   auto connect(Receiver &&rcvr) const {
     return async_read_operation_state<Scheduler, Handle, Receiver>(
-        stdexec::get_completion_scheduler<stdexec::set_value_t>(env), handle,
-        buffer, static_cast<Receiver &&>(rcvr));
+        env.sch, handle, buffer, static_cast<Receiver &&>(rcvr));
   }
 };
 } // namespace __async_read
