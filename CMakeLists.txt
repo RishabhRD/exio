@@ -6,7 +6,8 @@ include(cmake/CompilerWarnings.cmake)
 include(package.cmake)
 
 set(CMAKE_CXX_STANDARD 20)
-# add_compile_options(-fconcepts-diagnostics-depth=2)
+# add_compile_options(-fconcepts-diagnostics-depth=4)
+# add_compile_options(-ftemplate-backtrace-limit=0)
 
 add_library(project_options INTERFACE)
 

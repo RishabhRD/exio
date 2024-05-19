@@ -40,7 +40,7 @@ struct async_read_receiver {
   void set_value(std::size_t num_bytes) noexcept;
   void set_error(std::exception_ptr e) noexcept;
   void set_stopped() noexcept;
-  auto get_env() const noexcept;
+  auto get_env() const noexcept -> stdexec::env_of_t<Receiver>;
 };
 
 template <typename Scheduler, typename Handle, typename Receiver>
@@ -123,9 +123,9 @@ void async_read_receiver<Scheduler, Handle, Receiver>::set_stopped() noexcept {
   op->complete_stopped();
 }
 template <typename Scheduler, typename Handle, typename Receiver>
-auto async_read_receiver<Scheduler, Handle, Receiver>::get_env()
-    const noexcept {
-  return stdexec::empty_env{};
+auto async_read_receiver<Scheduler, Handle, Receiver>::get_env() const noexcept
+    -> stdexec::env_of_t<Receiver> {
+  return stdexec::get_env(op->rcvr);
 }
 
 template <typename Scheduler, typename Handle> struct async_read_sender {
