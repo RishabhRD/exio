@@ -29,15 +29,14 @@ namespace exio {
 namespace __io_uring {
 using namespace stdexec::tags;
 
-template <typename ReceiverId, std::size_t Extent>
-struct async_read_some_operation {
+template <typename ReceiverId> struct async_read_some_operation {
   using Receiver = stdexec::__t<ReceiverId>;
   struct impl : public __stoppable_op_base<Receiver> {
     int fd;
-    std::span<std::byte, Extent> buffer;
+    std::span<std::byte> buffer;
     std::size_t offset;
 
-    impl(context_t &ctx_, int fd_, std::span<std::byte, Extent> buffer_,
+    impl(context_t &ctx_, int fd_, std::span<std::byte> buffer_,
          std::size_t offset_, Receiver &&receiver_)
         : __stoppable_op_base<Receiver>{ctx_,
                                         static_cast<Receiver &&>(receiver_)},
@@ -70,10 +69,9 @@ struct async_read_some_operation {
   using __t = __stoppable_task_facade_t<impl>;
 };
 
-template <typename Scheduler, std::size_t Extent>
-struct async_read_some_sender {
+template <typename Scheduler> struct async_read_some_sender {
   int fd;
-  std::span<std::byte, Extent> buffer;
+  std::span<std::byte> buffer;
   std::size_t offset;
   using env_t = io_uring_env_t<Scheduler>;
   env_t env;
@@ -95,10 +93,9 @@ struct async_read_some_sender {
   }
 
   template <stdexec::receiver_of<completion_sigs> Receiver>
-  auto connect(Receiver &&receiver) const -> stdexec::__t<
-      async_read_some_operation<stdexec::__id<Receiver>, Extent>> {
-    return stdexec::__t<
-        async_read_some_operation<stdexec::__id<Receiver>, Extent>>(
+  auto connect(Receiver &&receiver) const
+      -> stdexec::__t<async_read_some_operation<stdexec::__id<Receiver>>> {
+    return stdexec::__t<async_read_some_operation<stdexec::__id<Receiver>>>(
         std::in_place, *(env.ctx), fd, buffer, offset,
         static_cast<Receiver &&>(receiver));
   }
