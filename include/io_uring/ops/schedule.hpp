@@ -56,8 +56,7 @@ template <class _ReceiverId> struct __schedule_operation {
   using __t = __io_task_facade<__impl>;
 };
 
-template <typename Scheduler> class __schedule_sender {
-public:
+template <typename Scheduler> struct __schedule_sender {
   using env_t = io_uring_env_t<Scheduler>;
   env_t env;
 
@@ -65,16 +64,11 @@ public:
   using __id = __schedule_sender;
   using __t = __schedule_sender;
 
-private:
   using __completion_sigs =
       stdexec::completion_signatures<stdexec::set_value_t(),
                                      stdexec::set_stopped_t()>;
 
-  // TODO doens't work with member function
-  STDEXEC_MEMFN_DECL(auto get_env)
-  (this const __schedule_sender &__sender) noexcept -> env_t {
-    return __sender.env;
-  }
+  auto get_env() const noexcept -> env_t { return env; }
 
   template <class _Env>
   auto get_completion_signatures(_Env) const noexcept -> __completion_sigs {
