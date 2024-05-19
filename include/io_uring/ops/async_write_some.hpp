@@ -87,26 +87,20 @@ struct async_write_some_sender {
                                      stdexec::set_error_t(std::exception_ptr),
                                      stdexec::set_stopped_t()>;
 
-  STDEXEC_MEMFN_DECL(auto get_env)
-  (this async_write_some_sender const &sender) noexcept -> env_t {
-    return sender.env;
-  }
+  auto get_env() const noexcept -> env_t { return env; }
 
   template <class Env>
-  STDEXEC_MEMFN_DECL(auto get_completion_signatures)
-  (this async_write_some_sender const &, Env) noexcept -> completion_sigs {
+  auto get_completion_signatures(Env) const noexcept -> completion_sigs {
     return {};
   }
 
   template <stdexec::receiver_of<completion_sigs> Receiver>
-  STDEXEC_MEMFN_DECL(auto connect)
-  (this async_write_some_sender const &sender, Receiver &&receiver)
-      -> stdexec::__t<
-          async_write_some_operation<stdexec::__id<Receiver>, Extent>> {
+  auto connect(Receiver &&receiver) const -> stdexec::__t<
+      async_write_some_operation<stdexec::__id<Receiver>, Extent>> {
     return stdexec::__t<
         async_write_some_operation<stdexec::__id<Receiver>, Extent>>(
-        std::in_place, *(sender.env.ctx), sender.fd, sender.buffer,
-        sender.offset, static_cast<Receiver &&>(receiver));
+        std::in_place, *(env.ctx), fd, buffer, offset,
+        static_cast<Receiver &&>(receiver));
   }
 };
 

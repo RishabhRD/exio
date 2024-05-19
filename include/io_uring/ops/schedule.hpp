@@ -56,8 +56,7 @@ template <class _ReceiverId> struct __schedule_operation {
   using __t = __io_task_facade<__impl>;
 };
 
-template <typename Scheduler> class __schedule_sender {
-public:
+template <typename Scheduler> struct __schedule_sender {
   using env_t = io_uring_env_t<Scheduler>;
   env_t env;
 
@@ -65,29 +64,22 @@ public:
   using __id = __schedule_sender;
   using __t = __schedule_sender;
 
-private:
   using __completion_sigs =
       stdexec::completion_signatures<stdexec::set_value_t(),
                                      stdexec::set_stopped_t()>;
 
-  STDEXEC_MEMFN_DECL(auto get_env)
-  (this const __schedule_sender &__sender) noexcept -> env_t {
-    return __sender.env;
-  }
+  auto get_env() const noexcept -> env_t { return env; }
 
   template <class _Env>
-  STDEXEC_MEMFN_DECL(auto get_completion_signatures)
-  (this const __schedule_sender &, _Env) noexcept -> __completion_sigs {
+  auto get_completion_signatures(_Env) const noexcept -> __completion_sigs {
     return {};
   }
 
   template <stdexec::receiver_of<__completion_sigs> _Receiver>
-  STDEXEC_MEMFN_DECL(auto connect)
-  (this const __schedule_sender &__sender, _Receiver &&__receiver)
+  auto connect(_Receiver &&__receiver) const
       -> stdexec::__t<__schedule_operation<stdexec::__id<_Receiver>>> {
     return stdexec::__t<__schedule_operation<stdexec::__id<_Receiver>>>(
-        std::in_place, *__sender.env.ctx,
-        static_cast<_Receiver &&>(__receiver));
+        std::in_place, *(env.ctx), static_cast<_Receiver &&>(__receiver));
   }
 };
 } // namespace __io_uring

@@ -135,8 +135,7 @@ template <class _ReceiverId> struct __schedule_after_operation {
   using __t = __stoppable_task_facade_t<__impl>;
 };
 
-template <typename Scheduler> class __schedule_after_sender {
-public:
+template <typename Scheduler> struct __schedule_after_sender {
   using sender_concept = stdexec::sender_t;
   using __id = __schedule_after_sender;
   using __t = __schedule_after_sender;
@@ -145,11 +144,7 @@ public:
   env_t __env_;
   std::chrono::nanoseconds __duration_;
 
-private:
-  STDEXEC_MEMFN_DECL(auto get_env)
-  (this const __schedule_after_sender &__sender) noexcept -> env_t {
-    return __sender.__env_;
-  }
+  auto get_env() const noexcept -> env_t { return __env_; }
 
   using __completion_sigs =
       stdexec::completion_signatures<stdexec::set_value_t(),
@@ -157,17 +152,15 @@ private:
                                      stdexec::set_stopped_t()>;
 
   template <class _Env>
-  STDEXEC_MEMFN_DECL(auto get_completion_signatures)
-  (this const __schedule_after_sender &, _Env) noexcept -> __completion_sigs {
+  auto get_completion_signatures(_Env) const noexcept -> __completion_sigs {
     return {};
   }
 
   template <stdexec::receiver_of<__completion_sigs> _Receiver>
-  STDEXEC_MEMFN_DECL(auto connect)
-  (this const __schedule_after_sender &__sender, _Receiver &&__receiver)
+  auto connect(_Receiver &&__receiver) const
       -> stdexec::__t<__schedule_after_operation<stdexec::__id<_Receiver>>> {
     return stdexec::__t<__schedule_after_operation<stdexec::__id<_Receiver>>>(
-        std::in_place, *__sender.__env_.ctx, __sender.__duration_,
+        std::in_place, *__env_.ctx, __duration_,
         static_cast<_Receiver &&>(__receiver));
   }
 };
