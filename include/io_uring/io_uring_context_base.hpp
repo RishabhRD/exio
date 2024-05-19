@@ -576,27 +576,26 @@ public:
     using __on_stopped_callback = typename stdexec::stop_token_of_t<
         stdexec::env_of_t<_Rcvr &>>::template callback_type<__on_stop>;
 
-    STDEXEC_MEMFN_DECL(void start)(this __run_op &__self) noexcept {
+    void start() & noexcept {
       std::optional<__on_stopped_callback> __callback(
-          std::in_place,
-          stdexec::get_stop_token(stdexec::get_env(__self.__rcvr_)),
-          __on_stop{__self.__context_});
+          std::in_place, stdexec::get_stop_token(stdexec::get_env(__rcvr_)),
+          __on_stop{__context_});
       try {
-        if (__self.__mode_ == until::stopped) {
-          __self.__context_.run_until_stopped();
+        if (__mode_ == until::stopped) {
+          __context_.run_until_stopped();
         } else {
-          __self.__context_.run_until_empty();
+          __context_.run_until_empty();
         }
       } catch (...) {
         __callback.reset();
-        stdexec::set_error(static_cast<_Rcvr &&>(__self.__rcvr_),
+        stdexec::set_error(static_cast<_Rcvr &&>(__rcvr_),
                            std::current_exception());
       }
       __callback.reset();
-      if (__self.__context_.stop_requested()) {
-        stdexec::set_stopped(static_cast<_Rcvr &&>(__self.__rcvr_));
+      if (__context_.stop_requested()) {
+        stdexec::set_stopped(static_cast<_Rcvr &&>(__rcvr_));
       } else {
-        stdexec::set_value(static_cast<_Rcvr &&>(__self.__rcvr_));
+        stdexec::set_value(static_cast<_Rcvr &&>(__rcvr_));
       }
     }
   };
@@ -617,13 +616,11 @@ public:
     explicit __run_sender(context_t *__context, until __mode) noexcept
         : __context_{__context}, __mode_{__mode} {}
 
-    template <stdexec::__decays_to<__run_sender> _Self,
-              stdexec::receiver_of<completion_signatures> _Rcvr>
-    STDEXEC_MEMFN_DECL(auto connect)
-    (this _Self &&__self, _Rcvr &&__rcvr) noexcept
+  public:
+    template <stdexec::receiver_of<completion_signatures> _Rcvr>
+    auto connect(_Rcvr &&__rcvr) const noexcept
         -> __run_op<stdexec::__decay_t<_Rcvr>> {
-      return {static_cast<_Rcvr &&>(__rcvr), *__self.__context_,
-              __self.__mode_};
+      return {static_cast<_Rcvr &&>(__rcvr), *__context_, __mode_};
     }
   };
 
@@ -725,9 +722,10 @@ template <__io_task _Base> struct __io_task_facade : __task {
 private:
   _Base __base_;
 
-  STDEXEC_MEMFN_DECL(void start)(this __io_task_facade &__self) noexcept {
-    context_t &__context = __self.__base_.context();
-    if (__context.submit(&__self)) {
+public:
+  void start() & noexcept {
+    context_t &__context = __base_.context();
+    if (__context.submit(this)) {
       __context.wakeup();
     }
   }
