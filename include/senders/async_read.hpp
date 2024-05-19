@@ -142,22 +142,17 @@ template <typename Scheduler, typename Handle> struct async_read_sender {
                                      stdexec::set_error_t(std::exception_ptr),
                                      stdexec::set_stopped_t()>;
 
-  STDEXEC_MEMFN_DECL(auto get_env)
-  (this async_read_sender const &sender) noexcept -> env_t {
-    return sender.env;
-  }
+  auto get_env() const noexcept -> env_t { return env; }
 
   template <class Env>
-  STDEXEC_MEMFN_DECL(auto get_completion_signatures)
-  (this async_read_sender const &, Env) noexcept -> completion_sigs {
+  auto get_completion_signatures(Env) const noexcept -> completion_sigs {
     return {};
   }
 
   template <stdexec::receiver_of<completion_sigs> Receiver>
-  STDEXEC_MEMFN_DECL(auto connect)
-  (this async_read_sender const &self, Receiver &&rcvr) {
+  auto connect(Receiver &&rcvr) const {
     return async_read_operation_state<Scheduler, Handle, Receiver>(
-        self.env.sch, self.handle, self.buffer, static_cast<Receiver &&>(rcvr));
+        env.sch, handle, buffer, static_cast<Receiver &&>(rcvr));
   }
 };
 } // namespace __async_read
